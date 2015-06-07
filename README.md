@@ -13,6 +13,6 @@ Requirements:
 - sudo apt-get install python-gevent
 
 Instructions:
-- Edit and rename richie.json, to your child's <name>.json.
-- Be sure to change to a new bitcoin address and private key (WIF)!
+- Edit and rename richie.json, to your child's name.json.
+- Be sure to add your own bitcoin address and private key(wif)!
 - Run with your child's name: $python run.py richie
