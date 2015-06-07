@@ -1,7 +1,7 @@
 # BitcoinPiggyBank
 Kid friendly bitcoin piggy bank, made with Python(Flask + PyQt QWebView + pybitcointools)
 
-Micro-pay your kids in bitcoin. Customize name and color!
+Micro-pay your kids in bitcoin. Customize name and color.
 They can save, view, and spend their balance with this simple app.
 
 ![Screenshot](https://raw.githubusercontent.com/SteveV916/BitcoinPiggyBank/master/screen.png "Screenshot")
