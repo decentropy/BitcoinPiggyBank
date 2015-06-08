@@ -16,6 +16,7 @@
     <style>
     .labelbox {
         background-color:#ffffff;
+        background: rgba(255, 255, 255, 0.7);
         border-radius: 10px;
     }
     </style>
@@ -40,42 +41,41 @@
     </div>
 
     <div class="col-xs-12 text-center" style="position:relative;">
-        <div class="col-xs-offset-5 col-xs-3 text-center labelbox" style="position:absolute; margin-top:200px">
-            <div id="balance">?</div>
+        <div class="col-xs-offset-4 col-xs-4 text-center labelbox" style="position:absolute; margin-top:150px">
+            <div id="balance">loading...</div>
         </div>
-        <img src="pyggy.svg" width="456" height="442">
+        <img src="pyggy.svg" width="296" height="287">
     </div>
 
 
     <div class="modal fade" id="modal-spend" tabindex="-1" role="dialog"><!-- Modal Spend -->
       <div class="modal-dialog modal-sm">
         <div class="modal-content">
-          <div class="modal-header">
-            <div class="close glyphicon glyphicon-remove" data-dismiss="modal" data-target="#whatModal"></div>
-            <h3>Spend Bitcoin</h3>
-          </div>
-          <div class="modal-body">
-            <form class="form-inline" role="form" id="grpinputaddress">
+            <div class="modal-header">
+                <a class="pull-right" data-dismiss="modal" data-target="#whatModal"><span class="close glyphicon glyphicon-remove" aria-hidden="true"></span></a>
+                <h3>Spend Bitcoin</h3>
+            </div>
+            <div class="modal-body">
                 <div class="form-group">
                     <b>Send to:</b><br>
+                    <div class="input-group col-xs-12" id="grptoaddress">
                     <input type="text" class="form-control input-sm" id="toaddress" placeholder="bitcoin address">
+                    </div>
                     <hr>
                     <b>Amount:</b><br>
-                    <div class="input-group" id="grpinputamount">
+                    <div class="input-group" id="grpamtusd">
                         <span class="input-group-addon">$</span>
-                        <input type="number" class="form-control input-lg" id="amtusd" placeholder="0.00" onKeyUp="convert(this)">
+                        <input type="number" class="form-control input" id="amtusd" placeholder="0.00" onKeyUp="convert(this)">
                     </div>
-                    <div class="input-group" id="grpinputamount">
+                    <div class="input-group" id="grpamtbtc">
                         <span class="input-group-addon">Ƀ</span>
-                        <input type="number" class="form-control input-lg" id="amtbtc" placeholder="0.00" onKeyUp="convert(this)">
+                        <input type="number" class="form-control input" id="amtbtc" placeholder="0.00" onKeyUp="convert(this)">
                     </div>
                 </div>
-                <hr>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <a class="btn-lg btn-primary" href="#" onclick="sendAmount()">Send &raquo;</a>
-          </div>
+            </div>
+            <div class="modal-footer">
+            <a class="btn-lg btn-primary" href="#" id="sendbtn" onclick="sendAmount()">Send &raquo;</a>
+            </div>
         </div>
       </div>
     </div><!-- /Modal Spend -->
@@ -88,8 +88,9 @@
             <h3>My Address</h3>
           </div>
           <div class="modal-body">
+            <div id="qrcodetext" class="text-center"></div>
+            <hr>
             <div id="qrcode" class="text-center"></div>
-            <div id="qrcodetext" class="text-center small"></div>
           </div>
         </div>
       </div>
@@ -102,41 +103,68 @@
     var satoshis;
 
     $(document).ready(function() {
-        getRate();
         getSettings();
     });
 
 
     function convert(obj){
+        //convert per rate
         if (obj.id=='amtusd'){
             $('#amtbtc').val( $('#amtusd').val()/rate );
         }
         else{
-            $('#amtusd').val( $('#amtbtc').val()*rate );
+            $('#amtusd').val( ($('#amtbtc').val()*rate).toFixed(2) );
+        }
+        //cap at balance
+        if ( $('#amtbtc').val() > satoshis/100000000){
+            $('#amtbtc').val(satoshis/100000000);
+            $('#amtusd').val( ($('#amtbtc').val()*rate).toFixed(2) )
         }
     }
 
     function sendAmount(){
-        $.ajax({
-            url: "spend?toaddress=" + $('#toaddress').val() + "&amtbtc=" + $('#amtbtc').val(),
-            type: 'GET',
-            dataType: 'json',
-            cache: false, 
-            crossDomain : true,
-            success: function (data) {            
-                //alert(JSON.stringify(data))
-                $('#modal-spend').modal('toggle');
-                setTimeout(function(){
-                  getBalance();
-                }, 2000);
-            },
-            error: function(){
-              alert("Cannot send amount.");
-            }
-        });
+        valid = true;
+        $('#grptoaddress').removeClass('has-error');  
+        $('#grpamtbtc').removeClass('has-error');  
+        //validate address
+        var patt = /^[13][a-zA-Z0-9]{26,33}/;
+        if (!patt.test( $('#toaddress').val() )){
+            $('#grptoaddress').addClass('has-error');
+            valid = false; 
+        }
+        if ( $('#amtbtc').val() == 0){
+            $('#grpamtbtc').addClass('has-error');  
+            valid = false; 
+        }
+        if (valid) {        
+            //submit transaction
+            $.ajax({
+                url: "spend?toaddress=" + $('#toaddress').val() + "&amtbtc=" + $('#amtbtc').val(),
+                type: 'GET',
+                dataType: 'json',
+                cache: false, 
+                crossDomain : true,
+                success: function (data) { //success, clear
+                    $('#modal-spend').modal('toggle');
+                    $('#toaddress').val('');
+                    $('#amtusd').val('');
+                    $('#amtbtc').val('');
+                    setTimeout(function(){
+                      getBalance();
+                    }, 2000);
+                },
+                error: function(){ 
+                    $('#sendbtn').addClass('btn-danger');
+                    setTimeout(function(){
+                        $('#sendbtn').removeClass('btn-danger');
+                    }, 3000);
+                }
+            });
+        }
     }
 
     function getSettings(){
+        //get name,address; display qr
         $.ajax({
             url: 'settings',
             type: 'GET',
@@ -145,13 +173,13 @@
             crossDomain : false,
             success: function (data) {
                 settings = data;
-                getBalance(settings["address"]);
+                getRate();
                 $('#qrcode').qrcode({text: settings["address"], width: 150, height: 150});
                 $('#qrcodetext').html('<a href="https://blockchain.info/address/' + settings["address"] + '">' + settings["address"] + '</a>');
                 fillTemplate(settings);
             },
             error: function(){
-                alert("Cannot get settings");
+                $('#balance').html("Cannot get settings");
             }
         });
     }
@@ -165,14 +193,16 @@
             crossDomain : true,
             success: function (data) {
               rate = parseFloat(data['last']);
+              getBalance();
             },
             error: function(){
-              alert("Cannot get exchange rate.");
+              $('#balance').html("Cannot get exchange rate.");
             }
         });
     }
 
     function getBalance(){
+        //try to get satoshis balance from blockchain.info, etc.
         $('#balance').html('refreshing...')
         $.ajax({
             url: 'https://blockchain.info/q/addressbalance/' + settings['address'] + '?confirmations=0',
@@ -182,10 +212,24 @@
             crossDomain : true,
             success: function (data) {
                 satoshis = data;
-                $('#balance').html("<h2>$" + ((satoshis/100000000)*rate).toFixed(2) + "</h2><small>" + satoshis/100000 + " mɃ</small>");
+                $('#balance').html("<h2>$" + ((satoshis/100000000)*rate).toFixed(2) + "</h2><small>" + satoshis/100000000 + " Ƀ</small>");
             },
-            error: function(){
-              alert("Cannot get balance.");
+            error: function(){ //backup option
+                $('#balance').html('Trying coinprism...');
+                $.ajax({
+                    url: 'https://api.coinprism.com/v1/addresses/' + settings['address'],
+                    type: 'GET',
+                    dataType: 'json',
+                    cache: false, 
+                    crossDomain : true,
+                    success: function (data) {
+                        satoshis = data['balance'];
+                        $('#balance').html("<h2>$" + ((satoshis/100000000)*rate).toFixed(2) + "</h2><small>" + satoshis/100000000 + " Ƀ</small>");
+                    },
+                    error: function(){
+                        $('#balance').html('Cannot get balance.');
+                    }
+                });        
             }
         });
     }
@@ -223,4 +267,3 @@
 </script>
 </body>
 </html>
-
