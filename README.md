@@ -9,7 +9,6 @@ Requirements:
 - sudo pip install flask
 - sudo pip install bitcoin # https://github.com/vbuterin/pybitcointools/
 - sudo apt-get install python-PyQt4
-- sudo apt-get install python-gevent
 
 Instructions:
 - Edit and rename richie.json, to your child's name.json.
