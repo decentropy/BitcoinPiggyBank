@@ -50,6 +50,7 @@ def launch_window(port):
     web = QWebView()
     web.load(QUrl("http://127.0.0.1:{0}".format(port)))
     web.setWindowTitle('Bitcoin Pyggy Bank')
+    web.resize(375, 430)
     web.show()
     sys.exit(app.exec_())
 
@@ -96,5 +97,4 @@ settings = []
 if __name__ == '__main__':
     loadsettings(sys.argv[1]) # $python pyggy.py <name>
     main()
-
 
