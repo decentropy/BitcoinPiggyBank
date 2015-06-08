@@ -3,7 +3,6 @@
 #sudo pip install flask
 #sudo pip install bitcoin # https://github.com/vbuterin/pybitcointools/
 #sudo apt-get install python-PyQt4
-#sudo apt-get install python-gevent
  
 import time
 from flask import Flask, send_from_directory, jsonify, request, render_template
