@@ -59,7 +59,8 @@
                 <div class="form-group">
                     <b>Send to:</b><br>
                     <div class="input-group col-xs-12" id="grptoaddress">
-                    <input type="text" class="form-control input-sm" id="toaddress" placeholder="bitcoin address">
+                        <input type="text" class="form-control" id="toaddress" placeholder="bitcoin address" aria-label="...">
+                        <div id="naughtykid"></div>
                     </div>
                     <hr>
                     <b>Amount:</b><br>
@@ -116,8 +117,9 @@
             $('#amtusd').val( ($('#amtbtc').val()*rate).toFixed(2) );
         }
         //cap at balance
-        if ( $('#amtbtc').val() > satoshis/100000000){
-            $('#amtbtc').val(satoshis/100000000);
+        cap = satoshis - settings["fee_satoshi"];
+        if ( $('#amtbtc').val() > cap/100000000){
+            $('#amtbtc').val(cap/100000000);
             $('#amtusd').val( ($('#amtbtc').val()*rate).toFixed(2) )
         }
     }
@@ -176,6 +178,7 @@
                 getRate();
                 $('#qrcode').qrcode({text: settings["address"], width: 150, height: 150});
                 $('#qrcodetext').html('<a href="https://blockchain.info/address/' + settings["address"] + '">' + settings["address"] + '</a>');
+                $('#naughtykid').html('<a href="#" onclick="$(\'#toaddress\').val(\'' + settings["return_address"] + '\')">Been naughty? Return to parent.</a>');
                 fillTemplate(settings);
             },
             error: function(){
@@ -200,6 +203,12 @@
             }
         });
     }
+    
+    function formatBalance(satoshis){
+        usdstr = ((satoshis/100000000)*rate).toFixed(2);
+        usdstrsplit = usdstr.split('.');
+        $('#balance').html("<h2>$" + usdstrsplit[0] + "<small>." + usdstrsplit[1] + "</small></h2><small>" + satoshis/100000000 + " Ƀ</small>");
+    }
 
     function getBalance(){
         //try to get satoshis balance from blockchain.info, etc.
@@ -212,7 +221,7 @@
             crossDomain : true,
             success: function (data) {
                 satoshis = data;
-                $('#balance').html("<h2>$" + ((satoshis/100000000)*rate).toFixed(2) + "</h2><small>" + satoshis/100000000 + " Ƀ</small>");
+                formatBalance(satoshis);
             },
             error: function(){ //backup option
                 $('#balance').html('Trying coinprism...');
@@ -224,7 +233,7 @@
                     crossDomain : true,
                     success: function (data) {
                         satoshis = data['balance'];
-                        $('#balance').html("<h2>$" + ((satoshis/100000000)*rate).toFixed(2) + "</h2><small>" + satoshis/100000000 + " Ƀ</small>");
+                        formatBalance(satoshis);
                     },
                     error: function(){
                         $('#balance').html('Cannot get balance.');
