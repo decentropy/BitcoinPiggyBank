@@ -1,10 +1,13 @@
 # BitcoinPiggyBank
 Kid friendly bitcoin piggy bank, made with Python(Flask + PyQt QWebView + pybitcointools)
 
+
+Customize name and color of a simple bitcoin piggy bank for kids.
+
+
 **Use Case:**
 Set up a recurring weekly payment (allowance) at Coinbase, to help young children learn about saving and spending. They can buy toys from Amazon with Purse.io, or use at stores with Gyft. No more counting and rolling coins! Supports spending to another address, and can save a default parent's address.
 
-Customize name and color of a simple bitcoin piggy bank for kids.
 
 ![Screenshot](https://raw.githubusercontent.com/SteveV916/BitcoinPiggyBank/master/screen.png "Screenshot")
 
