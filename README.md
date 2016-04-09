@@ -13,7 +13,7 @@ Set up a recurring weekly payment (allowance) at Coinbase, to help young childre
 
 Requirements:
 - sudo pip install flask
-- sudo pip install bitcoin # https://github.com/vbuterin/pybitcointools/
+- sudo pip install bitcoin
 - sudo apt-get install python-qt4
 
 Instructions:
